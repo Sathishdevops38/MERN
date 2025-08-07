@@ -1,0 +1,181 @@
+/* App.css */
+
+/* --- Google Font --- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* --- Global Styles --- */
+body {
+  background-color: #1a1a2e;
+  color: #e0e0e0;
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #16213e;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Navbar --- */
+.navbar {
+  background-color: #0f3460 !important;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-brand {
+  color: #e94560 !important;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.nav-link {
+  color: #e0e0e0 !important;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #e94560 !important;
+}
+
+/* --- Forms & Cards --- */
+h3 {
+  color: #e94560;
+  border-bottom: 2px solid #e94560;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-control {
+  background-color: #1f4068;
+  color: #e0e0e0;
+  border: 1px solid #1f4068;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+  background-color: #1f4068;
+  color: #e0e0e0;
+  border-color: #e94560;
+  box-shadow: 0 0 0 0.2rem rgba(233, 69, 96, 0.25);
+}
+
+.form-control::placeholder {
+  color: #a0a0a0;
+}
+
+/* --- Buttons --- */
+.btn-primary {
+  background-color: #e94560;
+  border-color: #e94560;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #d43d51;
+  border-color: #d43d51;
+}
+
+.btn-danger {
+  background-color: #ff5c5c;
+  border-color: #ff5c5c;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-danger:hover {
+  background-color: #e04b4b;
+  border-color: #e04b4b;
+}
+
+
+/* --- Table --- */
+.table {
+  background-color: #1f4068;
+  color: #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden; /* Ensures the border radius is applied to the table corners */
+}
+
+.table thead th {
+  background-color: #0f3460;
+  color: #e94560;
+  border-bottom: 2px solid #1a1a2e !important;
+}
+
+.table tbody tr {
+  transition: background-color 0.3s ease, opacity 0.5s ease-out;
+  opacity: 1;
+}
+
+.table tbody tr.fade-out {
+  opacity: 0;
+}
+
+.table tbody tr:hover {
+  background-color: #16213e;
+}
+
+.table td, .table th {
+  border-top: 1px solid #1a1a2e;
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.table td a {
+  color: #58a6ff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.table td a:hover {
+  color: #82baff;
+}
+
+/* --- Clock --- */
+.clock {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #e0e0e0;
+}
+
+/* --- Priority Colors --- */
+.priority-high {
+  border-left: 5px solid #e94560; /* Red for High */
+}
+
+.priority-medium {
+  border-left: 5px solid #f0a500; /* Orange for Medium */
+}
+
+.priority-low {
+  border-left: 5px solid #58a6ff; /* Blue for Low */
+}
+
+/* --- Completed Todo --- */
+.completed {
+  text-decoration: line-through;
+  color: #a0a0a0;
+  transition: color 0.3s ease, text-decoration 0.3s ease;
+}
