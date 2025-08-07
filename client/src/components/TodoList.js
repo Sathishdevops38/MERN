@@ -37,7 +37,7 @@ const Todo = props => {
   );
 };
 
-export default function TodoList({ todos, loading }) {
+export default function TodoList({ todos, loading, fetchTodos }) {
   async function deleteTodo(id) {
     confirmAlert({
       title: 'Confirm to submit',
@@ -47,6 +47,7 @@ export default function TodoList({ todos, loading }) {
           label: 'Yes',
           onClick: async () => {
             await supabase.from('todos').delete().eq('id', id);
+            fetchTodos();
             toast.success('Todo deleted successfully');
           }
         },
@@ -65,6 +66,7 @@ export default function TodoList({ todos, loading }) {
       .update({ completed: !todo.completed })
       .eq('id', id)
       .select();
+    fetchTodos();
     toast.info(`Todo marked as ${!todo.completed ? 'complete' : 'incomplete'}`);
   }
 
