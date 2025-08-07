@@ -1,6 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import { toast } from 'react-toastify';
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 
 const Todo = props => {
   const priority = props.todo.priority || 'medium';
@@ -34,10 +37,25 @@ const Todo = props => {
   );
 };
 
-export default function TodoList({ todos, fetchTodos }) {
+export default function TodoList({ todos, loading }) {
   async function deleteTodo(id) {
-    await supabase.from('todos').delete().eq('id', id);
-    fetchTodos();
+    confirmAlert({
+      title: 'Confirm to submit',
+      message: 'Are you sure you want to delete this todo?',
+      buttons: [
+        {
+          label: 'Yes',
+          onClick: async () => {
+            await supabase.from('todos').delete().eq('id', id);
+            toast.success('Todo deleted successfully');
+          }
+        },
+        {
+          label: 'No',
+          onClick: () => {}
+        }
+      ]
+    });
   }
 
   async function toggleTodo(id) {
@@ -47,7 +65,11 @@ export default function TodoList({ todos, fetchTodos }) {
       .update({ completed: !todo.completed })
       .eq('id', id)
       .select();
-    fetchTodos();
+    toast.info(`Todo marked as ${!todo.completed ? 'complete' : 'incomplete'}`);
+  }
+
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
   return (

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { supabase } from '../supabaseClient';
 
 export default function CreateTodo() {
   const [description, setDescription] = useState('');
@@ -11,36 +13,21 @@ export default function CreateTodo() {
     e.preventDefault();
 
     if (!description.trim()) {
-      alert('Todo description cannot be empty!');
+      toast.error('Todo description cannot be empty!');
       return;
     }
 
-    const newTodo = {
-      description,
-      due_date: dueDate,
-      priority,
-      completed: false,
-    };
+    const { error } = await supabase
+      .from('todos')
+      .insert([{ description, due_date: dueDate, priority, completed: false }])
+      .select();
 
-    try {
-      const response = await fetch('http://localhost:5000/todos/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newTodo),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create todo');
-      }
-
-      alert('Todo created successfully!');
-      history.push('/');
-
-    } catch (error) {
+    if (error) {
+      toast.error('Error creating todo');
       console.error('Error creating todo:', error);
-      alert('Failed to create todo. Please check the console for more details.');
+    } else {
+      toast.success('Todo created successfully!');
+      history.push('/');
     }
   }
 
