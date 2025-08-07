@@ -30,42 +30,36 @@ function App() {
   }, []);
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function fetchTodos() {
+    setLoading(true);
+    const { data, error } = await supabase.from('todos').select('*');
+    if (error) {
+      console.error('Error fetching todos:', error);
+    } else {
+      setTodos(data || []);
+    }
+    setLoading(false);
+  }
+
+  useEffect(() => {
     if (!session) return;
 
-    async function fetchInitialTodos() {
-      setLoading(true);
-      const { data, error } = await supabase.from('todos').select('*');
-      if (error) {
-        console.error('Error fetching todos:', error);
-      } else {
-        setTodos(data || []);
-      }
-      setLoading(false);
-    }
-
-    fetchInitialTodos();
+    fetchTodos();
 
     const subscription = supabase
       .channel('todos')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'todos' },
-        (payload) => {
-          if (payload.eventType === 'INSERT') {
-            setTodos((prevTodos) => [...prevTodos, payload.new]);
-          } else if (payload.eventType === 'UPDATE') {
-            setTodos((prevTodos) =>
-              prevTodos.map((todo) =>
-                todo.id === payload.new.id ? payload.new : todo
-              )
-            );
-          } else if (payload.eventType === 'DELETE') {
-            setTodos((prevTodos) =>
-              prevTodos.filter((todo) => todo.id !== payload.old.id)
-            );
-          }
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'todos' }, fetchTodos)
       .subscribe();
 
     return () => {
@@ -103,7 +97,9 @@ function App() {
         <Clock />
       </nav>
       <br />
-      <Route path="/" exact render={(props) => <TodoList {...props} todos={todos} loading={loading} />} />
+      <Route path="/" exact>
+        <TodoList todos={todos} loading={loading} fetchTodos={fetchTodos} />
+      </Route>
       <Route path="/edit/:id" component={EditTodo} />
       <Route path="/create" component={CreateTodo} />
     </div>
