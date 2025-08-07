@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { useHistory, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 export default function EditTodo() {
   const [description, setDescription] = useState('');
@@ -19,6 +20,7 @@ export default function EditTodo() {
         .single();
 
       if (error) {
+        toast.error('Error fetching todo');
         console.error('Error fetching todo:', error);
       } else if (data) {
         setDescription(data.description || '');
@@ -32,11 +34,17 @@ export default function EditTodo() {
 
   async function onSubmit(e) {
     e.preventDefault();
-    await supabase
+    const { error } = await supabase
       .from('todos')
       .update({ description, completed, due_date: dueDate, priority })
       .eq('id', id);
-    history.push('/');
+    if (error) {
+      toast.error('Error updating todo');
+      console.error('Error updating todo:', error);
+    } else {
+      toast.success('Todo updated successfully!');
+      history.push('/');
+    }
   }
 
   return (

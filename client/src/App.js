@@ -1,33 +1,85 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import { ToastContainer } from 'react-toastify';
 
+import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
 import CreateTodo from './components/CreateTodo';
 import EditTodo from './components/EditTodo';
 import TodoList from './components/TodoList';
 import Clock from './components/Clock';
+import AuthPage from './components/AuthPage';
 
 function App() {
+  const [session, setSession] = useState(null);
   const [todos, setTodos] = useState([]);
-  const location = useLocation();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchTodos();
-  }, [location]);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
 
-  async function fetchTodos() {
-    const { data, error } = await supabase.from('todos').select('*');
-    if (error) {
-      console.error('Error fetching todos:', error);
-    } else {
-      setTodos(data || []);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!session) return;
+
+    async function fetchInitialTodos() {
+      setLoading(true);
+      const { data, error } = await supabase.from('todos').select('*');
+      if (error) {
+        console.error('Error fetching todos:', error);
+      } else {
+        setTodos(data || []);
+      }
+      setLoading(false);
     }
+
+    fetchInitialTodos();
+
+    const subscription = supabase
+      .channel('todos')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'todos' },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setTodos((prevTodos) => [...prevTodos, payload.new]);
+          } else if (payload.eventType === 'UPDATE') {
+            setTodos((prevTodos) =>
+              prevTodos.map((todo) =>
+                todo.id === payload.new.id ? payload.new : todo
+              )
+            );
+          } else if (payload.eventType === 'DELETE') {
+            setTodos((prevTodos) =>
+              prevTodos.filter((todo) => todo.id !== payload.old.id)
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [session]);
+
+  if (!session) {
+    return <AuthPage />;
   }
 
   return (
     <div className="container">
+      <ToastContainer />
       <nav className="navbar navbar-expand-lg navbar-dark">
         <Link to="/" className="navbar-brand">MERN-Stack Todo App</Link>
         <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,11 +94,16 @@ function App() {
               <Link to="/create" className="nav-link">Create Todo</Link>
             </li>
           </ul>
+          <ul className="navbar-nav">
+            <li className="navbar-item">
+              <button className="btn btn-link nav-link" onClick={() => supabase.auth.signOut()}>Logout</button>
+            </li>
+          </ul>
         </div>
         <Clock />
       </nav>
       <br />
-      <Route path="/" exact render={(props) => <TodoList {...props} todos={todos} fetchTodos={fetchTodos} />} />
+      <Route path="/" exact render={(props) => <TodoList {...props} todos={todos} loading={loading} />} />
       <Route path="/edit/:id" component={EditTodo} />
       <Route path="/create" component={CreateTodo} />
     </div>
